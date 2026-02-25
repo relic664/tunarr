@@ -13,7 +13,7 @@ import {
 import { Mutex } from 'async-mutex';
 import dayjs from 'dayjs';
 import { inject, injectable } from 'inversify';
-import { compact, escape, flatMap, isNil, map, round } from 'lodash-es';
+import { compact, escape, flatMap, isNil, map, round, uniq } from 'lodash-es';
 import { writeFile } from 'node:fs/promises';
 import { match } from 'ts-pattern';
 import { MaterializedGuideItem } from '../types/guide.ts';
@@ -164,6 +164,27 @@ export class XmlTvWriter {
 
     if (guideItem.programming.type === 'program') {
       const program = guideItem.programming.program;
+
+      if (program.sourceType === 'jellyfin') {
+        const categories = uniq(
+          compact(
+            map(program.tags, ({ tag }) => {
+              if (isNonEmptyString(tag.tag)) {
+                return tag.tag;
+              }
+
+              return null;
+            }),
+          ),
+        );
+
+        if (categories.length > 0) {
+          partial.category = categories.map((category) => ({
+            _value: escape(category),
+          }));
+        }
+      }
+
       if (program.type !== 'movie' && title !== guideItem.title) {
         partial.subTitle ??= [
           {
