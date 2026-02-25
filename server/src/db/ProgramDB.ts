@@ -328,10 +328,23 @@ export class ProgramDB implements IProgramDB {
             },
           },
           artist: true,
-          season: true,
           show: {
             with: {
               artwork: true,
+              tags: {
+                with: {
+                  tag: true,
+                },
+              },
+            },
+          },
+          season: {
+            with: {
+              tags: {
+                with: {
+                  tag: true,
+                },
+              },
             },
           },
           externalIds: true,

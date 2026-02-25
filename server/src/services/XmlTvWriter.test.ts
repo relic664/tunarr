@@ -39,7 +39,7 @@ describe('XmlTvWriter', () => {
       expect(output.programmes[0].desc?.[0]._value).includes('&amp;');
     });
 
-    test('maps jellyfin tags to categories', () => {
+    test('maps deduped jellyfin hierarchy tags to categories', () => {
       const writer = new XmlTvWriter(inMemorySettingsDB());
       const output = writer.generateXmltv([
         {
@@ -51,27 +51,72 @@ describe('XmlTvWriter', () => {
               programming: {
                 type: 'program',
                 program: createFakeProgramOrm({
+                  type: 'episode',
                   sourceType: 'jellyfin',
                   tags: [
                     {
-                      tagId: 'tag-1',
+                      tagId: 'tag-program-1',
                       programId: 'program-1',
                       groupingId: null,
                       tag: {
-                        uuid: 'tag-1',
-                        tag: 'Visible & Featured',
+                        uuid: 'tag-program-1',
+                        tag: 'Shared Visibility',
                       },
                     },
                     {
-                      tagId: 'tag-2',
+                      tagId: 'tag-program-2',
                       programId: 'program-1',
                       groupingId: null,
                       tag: {
-                        uuid: 'tag-2',
-                        tag: 'Visible & Featured',
+                        uuid: 'tag-program-2',
+                        tag: 'Episode Specific',
                       },
                     },
                   ],
+                  season: {
+                    tags: [
+                      {
+                        tagId: 'tag-season-1',
+                        programId: null,
+                        groupingId: 'season-1',
+                        tag: {
+                          uuid: 'tag-season-1',
+                          tag: 'Season Curated',
+                        },
+                      },
+                      {
+                        tagId: 'tag-season-2',
+                        programId: null,
+                        groupingId: 'season-1',
+                        tag: {
+                          uuid: 'tag-season-2',
+                          tag: 'Shared Visibility',
+                        },
+                      },
+                    ],
+                  },
+                  show: {
+                    tags: [
+                      {
+                        tagId: 'tag-show-1',
+                        programId: null,
+                        groupingId: 'show-1',
+                        tag: {
+                          uuid: 'tag-show-1',
+                          tag: 'Show & Featured',
+                        },
+                      },
+                      {
+                        tagId: 'tag-show-2',
+                        programId: null,
+                        groupingId: 'show-1',
+                        tag: {
+                          uuid: 'tag-show-2',
+                          tag: 'Shared Visibility',
+                        },
+                      },
+                    ],
+                  },
                 }),
               },
             },
@@ -80,7 +125,10 @@ describe('XmlTvWriter', () => {
       ]);
 
       expect(output.programmes[0].category).toEqual([
-        { _value: 'Visible &amp; Featured' },
+        { _value: 'Shared Visibility' },
+        { _value: 'Episode Specific' },
+        { _value: 'Season Curated' },
+        { _value: 'Show &amp; Featured' },
       ]);
     });
   });

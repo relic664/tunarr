@@ -166,17 +166,31 @@ export class XmlTvWriter {
       const program = guideItem.programming.program;
 
       if (program.sourceType === 'jellyfin') {
-        const categories = uniq(
+        const tagNames = (
+          tags:
+            | Array<{
+                tag?: {
+                  tag?: string | null;
+                } | null;
+              } | null>
+            | null
+            | undefined,
+        ) =>
           compact(
-            map(program.tags, ({ tag }) => {
-              if (isNonEmptyString(tag.tag)) {
-                return tag.tag;
+            map(tags, (relation) => {
+              if (isNonEmptyString(relation?.tag?.tag)) {
+                return relation.tag.tag;
               }
 
               return null;
             }),
-          ),
-        );
+          );
+
+        const categories = uniq([
+          ...tagNames(program.tags),
+          ...tagNames(program.season?.tags),
+          ...tagNames(program.show?.tags),
+        ]);
 
         if (categories.length > 0) {
           partial.category = categories.map((category) => ({
